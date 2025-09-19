@@ -1,0 +1,60 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String?   @unique
+  name      String?
+  favorites Favorite[]
+  watchlist WatchlistItem[]
+  createdAt DateTime  @default(now())
+}
+
+model Movie {
+  id           Int       @id @default(autoincrement())
+  tmdbId       Int       @unique
+  title        String
+  posterPath   String?   // relative path
+  posterUrl    String?   // full TMDb URL
+  backdropPath String?
+  releaseDate  String?
+  overview     String?
+  createdAt    DateTime  @default(now())
+  favorites    Favorite[]
+  watchlist    WatchlistItem[]
+}
+
+model Favorite {
+  id       Int      @id @default(autoincrement())
+  user     User     @relation(fields: [userId], references: [id])
+  userId   Int
+  movie    Movie    @relation(fields: [movieId], references: [id])
+  movieId  Int
+  createdAt DateTime @default(now())
+
+  @@unique([userId, movieId])
+}
+
+model WatchlistItem {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  movie     Movie    @relation(fields: [movieId], references: [id])
+  movieId   Int
+  addedAt   DateTime @default(now())
+
+  @@unique([userId, movieId])
+}
